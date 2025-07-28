@@ -1,0 +1,28 @@
+CONFIDENTIAL//NOFORN
+Classification: CONFIDENTIAL
+Control Markings: NO FOREIGN NATIONALS
+Document Title: Memo - Counterintelligence Update on Operation Blue Echo
+Date: 2025-07-18
+Originating Office: CIA, Office of Counterintelligence
+Document Number: CIA-OCI-2025-0718-003
+Declassification Date: 2040-07-18
+
+(U) Purpose
+This memorandum provides an update on counterintelligence efforts related to Operation Blue Echo in [REDACTED].
+
+(C//NF) Current Status
+1. Surveillance of [REDACTED] agent identified on 2025-07-05 confirms ongoing contact with [REDACTED].
+2. CYBINT analysis reveals encrypted communications originating from [REDACTED] on 2025-07-14.
+3. Internal security review indicates no compromise of [REDACTED] assets as of 2025-07-17.
+
+(C//NF) Assessment
+The risk of exposure remains low, but [REDACTED] activities suggest potential counterintelligence threats. Enhanced monitoring is advised.
+
+(U) Next Steps
+- Implement additional CYBINT collection targeting [REDACTED] communications.
+- Brief [REDACTED] team on findings by 2025-07-25.
+
+Dissemination: Limited to personnel with CONFIDENTIAL//NOFORN clearance.
+Declassify On: 2040-07-18
+END OF DOCUMENT
+CONFIDENTIAL//NOFORN
