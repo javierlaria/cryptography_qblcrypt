@@ -1,65 +1,126 @@
+# -*- coding: utf-8 -*-
+
 def caesar_encrypt(text, shift):
+    """
+    Encrypts a text using the Caesar cipher.
+    
+    Each letter is shifted forward by a fixed number of positions in the alphabet.
+    The modulo operator (%) ensures the shift wraps around the alphabet (e.g., 'Z' with shift 3 becomes 'C').
+    Non-alphabetic characters are not changed.
+    """
     result = ""
     for char in text:
-        if char.isalpha():
+        if char.isalpha(): # Check if the character is a letter
+            # Determine the base ASCII value ('A' for uppercase, 'a' for lowercase)
             base = ord('A') if char.isupper() else ord('a')
+            # Calculate the shifted character
+            # 1. Get the character's 0-25 position in the alphabet (ord(char) - base)
+            # 2. Add the shift
+            # 3. Use modulo 26 to wrap around the alphabet
+            # 4. Add the base back to get the new ASCII value
+            # 5. Convert back to a character with chr()
             result += chr((ord(char) - base + shift) % 26 + base)
         else:
+            # If not a letter, keep the character as is
             result += char
     return result
 
 def caesar_decrypt(text, shift):
+    """
+    Decrypts a Caesar cipher text by shifting letters backward.
+    This is equivalent to encrypting with a negative shift.
+    """
     return caesar_encrypt(text, -shift)
 
-# Explain the Caesar cipher
-print("=== Caesar Cipher Explanation ===")
-print("The Caesar cipher is a classical encryption technique where each letter in the text is shifted by a fixed number of positions in the alphabet.")
-print("For example, with a shift of 3 (original Caesars), 'A' becomes 'D', 'B' becomes 'E', and so on. Non-alphabetic characters (like spaces or punctuation) remain unchanged.")
-print("Encryption shifts letters forward, while decryption shifts them backward by the same amount.")
-print("The shift value (1-25) determines how many positions each letter moves. For example, with shift=3, 'Hello' becomes 'Khoor'.")
-print("================================")
+def brute_force_attack(ciphertext):
+    """
+    Performs a brute-force attack on a Caesar-encrypted text.
+    It tries every possible shift from 1 to 25 and prints the result.
+    The user can then read the outputs to find the one that makes sense.
+    """
+    print("\n--- 🤖 Starting Brute-Force Attack ---")
+    print("The Caesar cipher's main weakness is its tiny 'key space' (only 25 possible shifts).")
+    print("We will now decrypt your text with every possible key. Look for the line that reveals a coherent message.")
+    print("-" * 40)
+    
+    # The keyspace for a Caesar cipher is 1-25. A shift of 0 or 26 results in the original text.
+    for shift_key in range(1, 26):
+        # Decrypt the text with the current key guess
+        potential_plaintext = caesar_decrypt(ciphertext, shift_key)
+        # Use :02d to format the number with a leading zero for alignment (e.g., 01, 02, ...)
+        print(f"Key #{shift_key:02d}: {potential_plaintext}")
+    
+    print("-" * 40)
+    print("Attack complete. Did you find the original message?")
 
-# Prompt user for action
-action = input("Do you want to (E)ncrypt or (D)ecrypt? Enter 'E' or 'D': ").strip().upper()
-if action not in ['E', 'D']:
-    print("Error: Please enter 'E' for encrypt or 'D' for decrypt.")
-    exit(1)
+def run_interactive_cipher():
+    """Main function to run the interactive cipher tool."""
+    
+    # --- Main Explanation ---
+    print("="*60)
+    print("🔑 Welcome to the Didactic Caesar Cipher Tool! 🔑")
+    print("="*60)
+    print("The Caesar cipher is a simple substitution cipher where each letter")
+    print("in the plaintext is shifted a certain number of places down the alphabet.")
+    print("\nFor example, with a 'shift' of 3:")
+    print("  'A' becomes 'D'")
+    print("  'Hello World!' becomes 'Khoor Zruog!'")
+    print("\nThis script allows you to Encrypt, Decrypt, and even Brute-Force a message.")
+    print("="*60)
 
-# Get user input for text and shift
-text = input("Enter the text to process: ")
-try:
-    shift = int(input("Enter the shift value (1-25): "))
-    if shift < 1 or shift > 25:
-        raise ValueError("Shift must be between 1 and 25.")
-except ValueError as e:
-    print(f"Error: {e}")
-    exit(1)
+    # --- Main Loop ---
+    while True:
+        # Prompt user for action
+        action = input("\nChoose an action: (E)ncrypt, (D)ecrypt, (B)rute-force, or (Q)uit? ").strip().upper()
 
-# Process the text based on user choice
-if action == 'E':
-    print(f"\nEncrypting '{text}' with a shift of {shift}...")
-    result = caesar_encrypt(text, shift)
-    print(f"Each letter is shifted forward by {shift} positions in the alphabet.")
-    print(f"For example, 'A' becomes '{chr((ord('A') - ord('A') + shift) % 26 + ord('A'))}' and 'a' becomes '{chr((ord('a') - ord('a') + shift) % 26 + ord('a'))}'.")
-    output_description = "Encrypted"
-else:
-    print(f"\nDecrypting '{text}' with a shift of {shift}...")
-    result = caesar_decrypt(text, shift)
-    print(f"Each letter is shifted backward by {shift} positions in the alphabet.")
-    print(f"For example, 'D' becomes '{chr((ord('D') - ord('A') - shift) % 26 + ord('A'))}' and 'd' becomes '{chr((ord('d') - ord('a') - shift) % 26 + ord('a'))}'.")
-    output_description = "Decrypted"
+        if action == 'Q':
+            print("Goodbye! 👋")
+            break
 
-# Save result to file
-try:
-    with open("caesars_encrypt.txt", "w") as file:
-        file.write(result)
-    print(f"{output_description} text saved to caesars_encrypt.txt: {result}")
-except IOError:
-    print("Error: Could not write to file.")
+        # --- ENCRYPTION ---
+        if action == 'E':
+            print("\n--- 🔒 Encryption Mode ---")
+            text = input("Enter the text to encrypt: ")
+            try:
+                shift = int(input("Enter the shift value (a number from 1 to 25): "))
+                if not 1 <= shift <= 25:
+                    raise ValueError("Shift must be between 1 and 25.")
+                
+                encrypted_text = caesar_encrypt(text, shift)
+                print(f"\nOriginal:   '{text}'")
+                print(f"Encrypted:  '{encrypted_text}'")
+                
+                # Verification
+                print(f"Verification (decrypting back): '{caesar_decrypt(encrypted_text, shift)}'")
 
-# Display result and verification
-print(f"{output_description} result: {result}")
-if action == 'E':
-    print(f"Verification (decrypting back): {caesar_decrypt(result, shift)}")
-else:
-    print(f"Verification (encrypting back): {caesar_encrypt(result, shift)}")
+            except ValueError as e:
+                print(f"Error: Invalid input. {e}")
+
+        # --- DECRYPTION ---
+        elif action == 'D':
+            print("\n--- 🗝️ Decryption Mode ---")
+            text = input("Enter the text to decrypt: ")
+            try:
+                shift = int(input("Enter the shift value (the original key, 1-25): "))
+                if not 1 <= shift <= 25:
+                    raise ValueError("Shift must be between 1 and 25.")
+                
+                decrypted_text = caesar_decrypt(text, shift)
+                print(f"\nCiphertext: '{text}'")
+                print(f"Plaintext:  '{decrypted_text}'")
+
+            except ValueError as e:
+                print(f"Error: Invalid input. {e}")
+
+        # --- BRUTE-FORCE ATTACK ---
+        elif action == 'B':
+            print("\n--- 💥 Brute-Force Mode ---")
+            text = input("Enter the ciphertext to attack: ")
+            brute_force_attack(text)
+
+        else:
+            print("Error: Invalid choice. Please enter 'E', 'D', 'B', or 'Q'.")
+
+# Run the main program
+if __name__ == "__main__":
+    run_interactive_cipher()
