@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cryptanalysis: The Art of Breaking Codes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3a 50%, #2a2a4a 100%);
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .slide-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            position: relative;
+        }
+
+        .slide {
+            min-width: 100vw;
+            height: 100vh;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 2;
+            max-width: 1000px;
+            margin: 0 auto;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            padding-right: 20px;
+        }
+
+        /* Custom scrollbar for all slide content */
+        .slide-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .slide-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            border-radius: 10px;
+        }
+
+        .slide-content::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        }
+
+        .slide1 {
+            background: linear-gradient(rgba(15, 15, 35, 0.8), rgba(26, 26, 58, 0.8)), 
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><rect fill="%23111122" width="1200" height="800"/><g opacity="0.1"><circle cx="200" cy="150" r="50" fill="%23fff"/><circle cx="800" cy="300" r="30" fill="%23fff"/><circle cx="400" cy="500" r="40" fill="%23fff"/><circle cx="1000" cy="200" r="25" fill="%23fff"/></g></svg>');
+        }
+
+        .slide2 {
+            background: linear-gradient(rgba(20, 30, 50, 0.9), rgba(40, 50, 70, 0.9)),
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><rect fill="%23223344" width="1200" height="800"/><g opacity="0.1"><polygon points="100,100 200,150 150,250 50,200" fill="%23fff"/><polygon points="900,200 1000,250 950,350 850,300" fill="%23fff"/><polygon points="500,400 600,450 550,550 450,500" fill="%23fff"/></g></svg>');
+        }
+
+        .slide3 {
+            background: linear-gradient(135deg, rgba(13, 13, 35, 0.95), rgba(25, 25, 50, 0.95), rgba(35, 35, 65, 0.95)),
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><rect fill="%23111133" width="1200" height="800"/><g opacity="0.08"><path d="M0,200 Q300,100 600,200 T1200,200 L1200,0 L0,0 Z" fill="%23fff"/><path d="M0,600 Q300,500 600,600 T1200,600 L1200,800 L0,800 Z" fill="%23fff"/></g></svg>');
+        }
+
+        .slide4 {
+            background: linear-gradient(135deg, rgba(10, 30, 50, 0.95), rgba(20, 45, 70, 0.95), rgba(30, 60, 90, 0.95)),
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><rect fill="%23112244" width="1200" height="800"/><g opacity="0.1"><rect x="100" y="600" width="50" height="200" fill="%23fff"/><rect x="200" y="400" width="50" height="400" fill="%23fff"/><rect x="300" y="500" width="50" height="300" fill="%23fff"/><rect x="400" y="300" width="50" height="500" fill="%23fff"/><rect x="500" y="550" width="50" height="250" fill="%23fff"/><rect x="600" y="450" width="50" height="350" fill="%23fff"/><rect x="700" y="700" width="50" height="100" fill="%23fff"/></g></svg>');
+        }
+
+        .slide5 {
+            background: linear-gradient(135deg, rgba(35, 15, 25, 0.95), rgba(50, 25, 40, 0.95), rgba(65, 35, 55, 0.95)),
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><rect fill="%23331122" width="1200" height="800"/><g opacity="0.06"><path d="M0,0 Q200,300 400,0 Q600,300 800,0 Q1000,300 1200,0 L1200,150 Q1000,450 800,150 Q600,450 400,150 Q200,450 0,150 Z" fill="%23fff"/><path d="M0,650 Q200,350 400,650 Q600,350 800,650 Q1000,350 1200,650 L1200,800 Q1000,500 800,800 Q600,500 400,800 Q200,500 0,800 Z" fill="%23fff"/></g></svg>');
+        }
+
+        .slide6 {
+            background: linear-gradient(135deg, rgba(15, 25, 35, 0.95), rgba(25, 40, 55, 0.95), rgba(35, 55, 75, 0.95)),
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><rect fill="%23112233" width="1200" height="800"/><g opacity="0.08"><path d="M0,100 L1200,100 M0,200 L1200,200 M0,300 L1200,300 M0,400 L1200,400 M0,500 L1200,500 M0,600 L1200,600 M0,700 L1200,700" stroke="%23fff" stroke-width="1"/><path d="M100,0 L100,800 M300,0 L300,800 M500,0 L500,800 M700,0 L700,800 M900,0 L900,800 M1100,0 L1100,800" stroke="%23fff" stroke-width="1"/></g></svg>');
+        }
+
+        .scroll-indicator {
+            position: fixed;
+            top: 120px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .scroll-indicator.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .scroll-arrow {
+            font-size: 1.5rem;
+            color: #4ecdc4;
+            animation: bounce 2s infinite;
+        }
+
+        .scroll-text {
+            color: #b8b8b8;
+            font-size: 0.8rem;
+            text-align: center;
+            writing-mode: vertical-lr;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        /* Navigation */
+        .nav-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 100;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            padding: 12px 24px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        .nav-btn:hover {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .nav-dots {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dot.active {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            transform: scale(1.2);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.6);
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            text-shadow: 0 0 30px rgba(78, 205, 196, 0.3);
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: #4ecdc4;
+            text-align: center;
+            position: relative;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            border-radius: 2px;
+        }
+
+        h3 {
+            font-size: 1.8rem;
+            color: #45b7d1;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        p {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            color: #e8e8e8;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #b8b8b8;
+            text-align: center;
+            margin-bottom: 3rem;
+            font-style: italic;
+        }
+
+        /* Content Styles */
+        .intro-content {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .highlight {
+            background: linear-gradient(45deg, rgba(78, 205, 196, 0.3), rgba(255, 107, 107, 0.3));
+            padding: 0.2rem 0.8rem;
+            border-radius: 8px;
+            font-weight: bold;
+            border: 1px solid rgba(78, 205, 196, 0.5);
+        }
+
+        .method-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .method-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .method-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(78, 205, 196, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+            opacity: 0;
+        }
+
+        .method-card:hover::before {
+            opacity: 1;
+            transform: rotate(45deg) translate(50%, 50%);
+        }
+
+        .method-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+            border-color: rgba(78, 205, 196, 0.5);
+        }
+
+        .method-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .method-title {
+            color: #4ecdc4;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .method-desc {
+            color: #b8b8b8;
+            line-height: 1.6;
+        }
+
+        /* Structural Analysis Styles */
+        .structural-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+            padding-bottom: 3rem;
+        }
+
+        .structural-method {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 25px;
+            padding: 2.5rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            scroll-margin-top: 100px;
+        }
+
+        .structural-method::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(69, 183, 209, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .structural-method:hover::before {
+            left: 100%;
+        }
+
+        .structural-method:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-3px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .period-demo {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid rgba(69, 183, 209, 0.3);
+        }
+
+        .key-visualization {
+            margin-bottom: 2rem;
+        }
+
+        .key-line {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .key-repeats {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .key-segment {
+            background: linear-gradient(45deg, #45b7d1, #4ecdc4);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: bold;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .period-markers {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .period-mark {
+            color: #ff6b6b;
+            font-size: 0.9rem;
+            font-weight: bold;
+            background: rgba(255, 107, 107, 0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 107, 107, 0.4);
+        }
+
+        .period-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .method-card-small {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .method-card-small h4 {
+            color: #45b7d1;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .method-desc-small {
+            color: #b8b8b8;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .method-result {
+            color: #4ecdc4;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            background: rgba(78, 205, 196, 0.1);
+            padding: 0.5rem;
+            border-radius: 8px;
+        }
+
+        /* Kasiski Analysis Styles */
+        .kasiski-demo {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .step-analysis {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .analysis-step {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .step-title {
+            color: #ff6b6b;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .cipher-example {
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+
+        .cipher-text {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 0.5rem;
+            word-break: break-all;
+        }
+
+        .highlight-kasiski {
+            background: rgba(255, 107, 107, 0.4);
+            color: #ff6b6b;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .repetition-info {
+            color: #4ecdc4;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .distance-calculations {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .distance-calc {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(69, 183, 209, 0.1);
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .calc-result {
+            color: #45b7d1;
+            font-weight: bold;
+        }
+
+        .factor-table {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .factor-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(78, 205, 196, 0.1);
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .distance {
+            color: #ff6b6b;
+            font-weight: bold;
+            min-width: 30px;
+        }
+
+        .factors {
+            color: #4ecdc4;
+        }
+
+        .gcd-final {
+            text-align: center;
+            background: rgba(78, 205, 196, 0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            color: #4ecdc4;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+        }
+
+        .kasiski-advantages {
+            background: rgba(69, 183, 209, 0.1);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(69, 183, 209, 0.3);
+        }
+
+        .advantage-title {
+            color: #45b7d1;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .advantage-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .advantage-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .advantage-icon {
+            color: #4ecdc4;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .advantage-text {
+            color: #e8e8e8;
+        }
+
+        /* Friedman Test Styles */
+        .friedman-demo {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid rgba(78, 205, 196, 0.3);
+        }
+
+        .friedman-formula {
+            margin-bottom: 2rem;
+        }
+
+        .formula-box {
+            background: rgba(78, 205, 196, 0.1);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            text-align: center;
+        }
+
+        .formula-title {
+            color: #4ecdc4;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .formula {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            color: #ff6b6b;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 107, 107, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        .ic-testing {
+            margin-bottom: 2rem;
+        }
+
+        .ic-title {
+            color: #45b7d1;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .ic-test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .ic-test-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .test-period {
+            color: #45b7d1;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .test-ic {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            padding: 0.3rem;
+            border-radius: 5px;
+        }
+
+        .bad-ic { color: #ff6b6b; background: rgba(255, 107, 107, 0.1); }
+        .medium-ic { color: #ffa500; background: rgba(255, 165, 0, 0.1); }
+        .good-ic { color: #90ee90; background: rgba(144, 238, 144, 0.1); }
+        .best-ic { color: #4ecdc4; background: rgba(78, 205, 196, 0.2); font-weight: bold; }
+
+        .test-result {
+            color: #b8b8b8;
+            font-size: 0.9rem;
+        }
+
+        .friedman-graph {
+            margin-bottom: 2rem;
+        }
+
+        .graph-title {
+            color: #4ecdc4;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .graph-container {
+            position: relative;
+            background: rgba(0, 0, 0, 0.3);
+            height: 200px;
+            border-radius: 15px;
+            border: 1px solid rgba(78, 205, 196, 0.3);
+        }
+
+        .graph-y-axis {
+            position: absolute;
+            left: 10px;
+            top: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: #b8b8b8;
+            font-size: 0.8rem;
+            padding: 10px 0;
+        }
+
+        .graph-plot {
+            position: absolute;
+            left: 50px;
+            right: 50px;
+            top: 10px;
+            bottom: 30px;
+        }
+
+        .plot-point {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #45b7d1;
+            border: 2px solid white;
+            transform: translate(-50%, 50%);
+            transition: all 0.3s ease;
+        }
+
+        .plot-point:hover {
+            width: 16px;
+            height: 16px;
+            background: #ff6b6b;
+        }
+
+        .best-point {
+            background: #4ecdc4 !important;
+            width: 16px;
+            height: 16px;
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.6);
+        }
+
+        .peak-indicator {
+            position: absolute;
+            right: -120px;
+            top: 50%;
+            color: #4ecdc4;
+            font-weight: bold;
+            background: rgba(78, 205, 196, 0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+
+        .graph-x-axis {
+            position: absolute;
+            bottom: 10px;
+            left: 50px;
+            right: 50px;
+            display: flex;
+            justify-content: space-between;
+            color: #b8b8b8;
+            font-size: 0.8rem;
+        }
+
+        .friedman-conclusion {
+            background: linear-gradient(45deg, rgba(78, 205, 196, 0.2), rgba(69, 183, 209, 0.2));
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(78, 205, 196, 0.4);
+        }
+
+        .conclusion-box {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .conclusion-icon {
+            font-size: 2rem;
+            opacity: 0.8;
+        }
+
+        .conclusion-text {
+            color: #e8e8e8;
+            line-height: 1.6;
+        }
+
+        .conclusion-text strong {
+            color: #4ecdc4;
+        }
+
+        .structural-wisdom {
+            background: linear-gradient(45deg, rgba(69, 183, 209, 0.1), rgba(78, 205, 196, 0.1));
+            border: 1px solid rgba(69, 183, 209, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            font-size: 1.2rem;
+            font-style: italic;
+            color: #f0f0f0;
+            font-weight: 500;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .period-methods,
+            .ic-test-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .scroll-indicator {
+                right: 10px;
+                top: 100px;
+            }
+            
+            .scroll-text {
+                writing-mode: initial;
+                font-size: 0.7rem;
+            }
+
+            .slide {
+                padding: 40px 30px;
+            }
+
+            h1 {
+                font-size: 3rem;
+            }
+
+            h2 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .step-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .distance-calc,
+            .factor-row {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .conclusion-box {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .peak-indicator {
+                position: static;
+                margin-top: 1rem;
+                text-align: center;
+            }
+
+            .slide {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .nav-container {
+                padding: 0.8rem 1.5rem;
+            }
+
+            .nav-btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+
+            .scroll-indicator {
+                right: 5px;
+                top: 80px;
+                padding: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scroll-indicator" id="scrollIndicator">
+        <div class="scroll-arrow">↓</div>
+        <div class="scroll-text">SCROLL</div>
+    </div>
+
+    <div class="slide-container" id="slideContainer">
+        <!-- Slide 1: Introduction -->
+        <div class="slide slide1">
+            <div class="slide-content">
+                <div class="intro-content">
+                    <h1>CRYPTANALYSIS</h1>
+                    <p class="subtitle">The Art and Science of Breaking Codes</p>
+                    <p>In the shadowy world of cryptography, there exists a discipline that stands as both guardian and challenger of secrets: <span class="highlight">cryptanalysis</span>. This is the art of breaking codes, deciphering hidden messages, and unraveling the mathematical puzzles that protect our most sensitive information.</p>
+                    
+                    <p>From ancient military campaigns to modern digital warfare, cryptanalysts have served as digital detectives, using mathematics, linguistics, and computational power to pierce the veil of encryption. Today, we embark on a journey through the fascinating realm of <span class="highlight">structural cryptanalysis</span> - the methodical approach to breaking codes by analyzing their underlying patterns and structures.</p>
+                    
+                    <p>Prepare to discover the techniques that have changed the course of history, from the breaking of the Enigma machine to the modern methods that secure our digital age.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Overview -->
+        <div class="slide slide2">
+            <div class="slide-content">
+                <h2>Methods of Attack</h2>
+                <div class="method-grid">
+                    <div class="method-card">
+                        <div class="method-icon">🔍</div>
+                        <div class="method-title">Frequency Analysis</div>
+                        <div class="method-desc">Exploiting the natural distribution of letters in language to reveal patterns in simple substitution ciphers. The foundation of classical cryptanalysis.</div>
+                    </div>
+                    
+                    <div class="method-card">
+                        <div class="method-icon">📊</div>
+                        <div class="method-title">Statistical Analysis</div>
+                        <div class="method-desc">Using mathematical tools like the Index of Coincidence and chi-squared tests to identify cipher characteristics and key lengths.</div>
+                    </div>
+                    
+                    <div class="method-card">
+                        <div class="method-icon">🔄</div>
+                        <div class="method-title">Pattern Recognition</div>
+                        <div class="method-desc">Identifying repeated sequences, common words, and structural patterns that reveal information about the cipher's construction.</div>
+                    </div>
+                    
+                    <div class="method-card">
+                        <div class="method-icon">🧩</div>
+                        <div class="method-title">Structural Analysis</div>
+                        <div class="method-desc">Examining the fundamental structure of polyalphabetic ciphers to determine key length and individual cipher alphabets.</div>
+                    </div>
+                    
+                    <div class="method-card">
+                        <div class="method-icon">💻</div>
+                        <div class="method-title">Computational Methods</div>
+                        <div class="method-desc">Leveraging modern computing power for brute force attacks, genetic algorithms, and machine learning approaches.</div>
+                    </div>
+                    
+                    <div class="method-card">
+                        <div class="method-icon">🎯</div>
+                        <div class="method-title">Known Plaintext</div>
+                        <div class="method-desc">Exploiting situations where portions of the plaintext are known or can be guessed, dramatically simplifying the cryptanalysis process.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Structural Analysis -->
+        <div class="slide slide3">
+            <div class="slide-content">
+                <div class="structural-container">
+                    <h2>Structural Analysis of Polyalphabetic Ciphers</h2>
+                    
+                    <div class="structural-method">
+                        <h3>🔑 Understanding Key Period</h3>
+                        <p>The key period is the length of the keyword used in a polyalphabetic cipher. Understanding this concept is crucial for structural analysis, as it determines how the cipher alphabets repeat throughout the message.</p>
+                        
+                        <div class="period-demo">
+                            <div class="key-visualization">
+                                <div class="key-line">
+                                    <strong>Keyword:</strong>
+                                    <div class="key-repeats">
+                                        <div class="key-segment">CRYPTO</div>
+                                        <div class="key-segment">CRYPTO</div>
+                                        <div class="key-segment">CRYPTO</div>
+                                        <div class="key-segment">CRY...</div>
+                                    </div>
+                                </div>
+                                <div class="key-line">
+                                    <strong>Position:</strong>
+                                    <span style="font-family: 'Courier New', monospace;">1 2 3 4 5 6 | 7 8 9 10 11 12 | 13 14 15 16 17 18 | 19 20 21...</span>
+                                </div>
+                                <div class="period-markers">
+                                    <div class="period-mark">Period = 6</div>
+                                    <div class="period-mark">Repeats every 6 letters</div>
+                                    <div class="period-mark">Pattern: C-R-Y-P-T-O</div>
+                                </div>
+                            </div>
+                            
+                            <p>With a period of 6, positions 1, 7, 13, 19... all use the same cipher alphabet (determined by 'C'). Similarly, positions 2, 8, 14, 20... use the alphabet determined by 'R', and so on.</p>
+                        </div>
+                        
+                        <div class="period-methods">
+                            <div class="method-card-small">
+                                <h4>Kasiski Examination</h4>
+                                <div class="method-desc-small">Finds repeated sequences in ciphertext and calculates distances between them to determine possible key lengths.</div>
+                                <div class="method-result">Distance Analysis → GCD → Key Length</div>
+                            </div>
+                            
+                            <div class="method-card-small">
+                                <h4>Friedman Test</h4>
+                                <div class="method-desc-small">Uses Index of Coincidence to statistically determine the most likely key length by measuring randomness.</div>
+                                <div class="method-result">IC Calculation → Peak Detection → Key Length</div>
+                            </div>
+                            
+                            <div class="method-card-small">
+                                <h4>Autocorrelation</h4>
+                                <div class="method-desc-small">Compares the ciphertext with shifted versions of itself to find the period where patterns align.</div>
+                                <div class="method-result">Pattern Matching → Correlation Peak → Key Length</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Kasiski Examination -->
+        <div class="slide slide4">
+            <div class="slide-content">
+                <div class="structural-container">
+                    <div class="structural-method">
+                        <h3>🔍 Kasiski Examination</h3>
+                        <p>Named after Friedrich Kasiski, this method identifies repeated sequences in ciphertext to determine the key length of polyalphabetic ciphers.</p>
+                        
+                        <div class="kasiski-demo">
+                            <div class="step-analysis">
+                                <div class="analysis-step">
+                                    <div class="step-header">
+                                        <div class="step-number">1</div>
+                                        <div class="step-title">Find Repeated Sequences</div>
+                                    </div>
+                                    <div class="cipher-example">
+                                        <div class="cipher-text">
+                                            DYDUXR<span class="highlight-kasiski">MGT</span>XNJYQMX<span class="highlight-kasiski">MGT</span>GQSKXR<span class="highlight-kasiski">MGT</span>DLWSK
+                                        </div>
+                                        <div class="repetition-info">Repeated sequence "MGT" found at positions: 7, 18, 29</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="analysis-step">
+                                    <div class="step-header">
+                                        <div class="step-number">2</div>
+                                        <div class="step-title">Calculate Distances</div>
+                                    </div>
+                                    <div class="distance-calculations">
+                                        <div class="distance-calc">
+                                            <span>Distance between positions 7 and 18:</span>
+                                            <span class="calc-result">18 - 7 = 11</span>
+                                        </div>
+                                        <div class="distance-calc">
+                                            <span>Distance between positions 18 and 29:</span>
+                                            <span class="calc-result">29 - 18 = 11</span>
+                                        </div>
+                                        <div class="distance-calc">
+                                            <span>Distance between positions 7 and 29:</span>
+                                            <span class="calc-result">29 - 7 = 22</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="analysis-step">
+                                    <div class="step-header">
+                                        <div class="step-number">3</div>
+                                        <div class="step-title">Find Common Factors</div>
+                                    </div>
+                                    <div class="factor-table">
+                                        <div class="factor-row">
+                                            <span class="distance">11:</span>
+                                            <span class="factors">1, 11</span>
+                                        </div>
+                                        <div class="factor-row">
+                                            <span class="distance">11:</span>
+                                            <span class="factors">1, 11</span>
+                                        </div>
+                                        <div class="factor-row">
+                                            <span class="distance">22:</span>
+                                            <span class="factors">1, 2, 11, 22</span>
+                                        </div>
+                                    </div>
+                                    <div class="gcd-final">
+                                        <strong>GCD(11, 11, 22) = 11</strong><br>
+                                        Probable Key Length: 11
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="kasiski-advantages">
+                                <div class="advantage-title">Why Kasiski Works</div>
+                                <div class="advantage-list">
+                                    <div class="advantage-item">
+                                        <div class="advantage-icon">✓</div>
+                                        <div class="advantage-text">Repeated plaintext encrypted with the same key portion produces identical ciphertext</div>
+                                    </div>
+                                    <div class="advantage-item">
+                                        <div class="advantage-icon">✓</div>
+                                        <div class="advantage-text">Distance between repetitions reveals multiples of the key length</div>
+                                    </div>
+                                    <div class="advantage-item">
+                                        <div class="advantage-icon">✓</div>
+                                        <div class="advantage-text">Works effectively on longer messages with multiple repetitions</div>
+                                    </div>
+                                    <div class="advantage-item">
+                                        <div class="advantage-icon">✓</div>
+                                        <div class="advantage-text">Provides concrete mathematical evidence for key length</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Friedman Test -->
+        <div class="slide slide5">
+            <div class="slide-content">
+                <div class="structural-container">
+                    <div class="structural-method">
+                        <h3>📊 Friedman Test (Index of Coincidence)</h3>
+                        <p>Developed by William Friedman, this statistical method uses the Index of Coincidence to determine key length by measuring the randomness of text at different periods.</p>
+                        
+                        <div class="friedman-demo">
+                            <div class="friedman-formula">
+                                <div class="formula-box">
+                                    <div class="formula-title">Index of Coincidence Formula</div>
+                                    <div class="formula">IC = Σ[f(i) × (f(i)-1)] / [N × (N-1)]</div>
+                                    <div style="color: #b8b8b8; font-size: 0.9rem; margin-top: 0.5rem;">
+                                        Where f(i) = frequency of letter i, N = total letters
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="ic-testing">
+                                <div class="ic-title">Testing Different Key Lengths</div>
+                                <div class="ic-test-grid">
+                                    <div class="ic-test-item">
+                                        <div class="test-period">Period 1</div>
+                                        <div class="test-ic bad-ic">0.038</div>
+                                        <div class="test-result">Too Random</div>
+                                    </div>
+                                    <div class="ic-test-item">
+                                        <div class="test-period">Period 2</div>
+                                        <div class="test-ic bad-ic">0.041</div>
+                                        <div class="test-result">Still Random</div>
+                                    </div>
+                                    <div class="ic-test-item">
+                                        <div class="test-period">Period 3</div>
+                                        <div class="test-ic medium-ic">0.045</div>
+                                        <div class="test-result">Improving</div>
+                                    </div>
+                                    <div class="ic-test-item">
+                                        <div class="test-period">Period 4</div>
+                                        <div class="test-ic medium-ic">0.043</div>
+                                        <div class="test-result">Declining</div>
+                                    </div>
+                                    <div class="ic-test-item">
+                                        <div class="test-period">Period 5</div>
+                                        <div class="test-ic good-ic">0.059</div>
+                                        <div class="test-result">Much Better</div>
+                                    </div>
+                                    <div class="ic-test-item">
+                                        <div class="test-period">Period 6</div>
+                                        <div class="test-ic best-ic">0.067</div>
+                                        <div class="test-result">Best Match!</div>
+                                    </div>
+                                    <div class="ic-test-item">
+                                        <div class="test-period">Period 7</div>
+                                        <div class="test-ic medium-ic">0.048</div>
+                                        <div class="test-result">Declining</div>
+                                    </div>
+                                    <div class="ic-test-item">
+                                        <div class="test-period">Period 8</div>
+                                        <div class="test-ic bad-ic">0.042</div>
+                                        <div class="test-result">Poor</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="friedman-graph">
+                                <div class="graph-title">Index of Coincidence vs Key Length</div>
+                                <div class="graph-container">
+                                    <div class="graph-y-axis">
+                                        <span>0.070</span>
+                                        <span>0.060</span>
+                                        <span>0.050</span>
+                                        <span>0.040</span>
+                                        <span>0.030</span>
+                                    </div>
+                                    <div class="graph-plot">
+                                        <div class="plot-point" style="left: 12.5%; bottom: 20%;"></div>
+                                        <div class="plot-point" style="left: 25%; bottom: 27.5%;"></div>
+                                        <div class="plot-point" style="left: 37.5%; bottom: 37.5%;"></div>
+                                        <div class="plot-point" style="left: 50%; bottom: 32.5%;"></div>
+                                        <div class="plot-point" style="left: 62.5%; bottom: 72.5%;"></div>
+                                        <div class="plot-point best-point" style="left: 75%; bottom: 92.5%;">
+                                            <div class="peak-indicator">Key Length: 6</div>
+                                        </div>
+                                        <div class="plot-point" style="left: 87.5%; bottom: 45%;"></div>
+                                    </div>
+                                    <div class="graph-x-axis">
+                                        <span>1</span>
+                                        <span>2</span>
+                                        <span>3</span>
+                                        <span>4</span>
+                                        <span>5</span>
+                                        <span>6</span>
+                                        <span>7</span>
+                                        <span>8</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="friedman-conclusion">
+                                <div class="conclusion-box">
+                                    <div class="conclusion-icon">🎯</div>
+                                    <div class="conclusion-text">
+                                        The <strong>highest Index of Coincidence at period 6</strong> indicates that when we group the ciphertext into columns spaced 6 positions apart, each column behaves like a monoalphabetic substitution cipher. This statistical evidence strongly suggests a <strong>key length of 6</strong>.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Conclusion -->
+        <div class="slide slide6">
+            <div class="slide-content">
+                <div class="structural-container">
+                    <h2>The Art of Structural Cryptanalysis</h2>
+                    
+                    <div class="structural-method">
+                        <h3>🔓 Breaking the Cipher</h3>
+                        <p>Once the key length is determined through structural analysis, the cryptanalyst can separate the polyalphabetic cipher into multiple monoalphabetic ciphers, each vulnerable to classical frequency analysis techniques.</p>
+                        
+                        <div class="method-grid" style="margin-top: 2rem;">
+                            <div class="method-card">
+                                <div class="method-icon">🔍</div>
+                                <div class="method-title">Column Separation</div>
+                                <div class="method-desc">Divide the ciphertext into columns based on the determined key length, creating separate monoalphabetic substitutions.</div>
+                            </div>
+                            
+                            <div class="method-card">
+                                <div class="method-icon">📊</div>
+                                <div class="method-title">Frequency Analysis</div>
+                                <div class="method-desc">Apply classical frequency analysis to each column independently to recover individual key letters.</div>
+                            </div>
+                            
+                            <div class="method-card">
+                                <div class="method-icon">🧩</div>
+                                <div class="method-title">Key Reconstruction</div>
+                                <div class="method-desc">Combine the results from each column to reconstruct the complete keyword and decrypt the message.</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(78, 205, 196, 0.1); padding: 2rem; border-radius: 20px; margin-top: 3rem; border: 1px solid rgba(78, 205, 196, 0.3);">
+                            <h3 style="color: #4ecdc4; text-align: center; margin-bottom: 1.5rem;">Historical Impact</h3>
+                            <p style="text-align: center; font-size: 1.1rem; line-height: 1.8;">
+                                These structural analysis techniques were instrumental in breaking the German Enigma machine during World War II, 
+                                demonstrating how mathematical insight can overcome even the most sophisticated encryption of its time. 
+                                The principles discovered by cryptanalysts like Kasiski and Friedman continue to influence modern cryptanalysis, 
+                                reminding us that even in our digital age, the fundamental battle between codemakers and codebreakers continues.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="structural-wisdom">
+                        <span style="font-size: 2rem; opacity: 0.7;">💡</span>
+                        <span>"In cryptanalysis, patterns are the enemy of security. The art lies in finding order within apparent chaos."</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-container">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">‹ Previous</button>
+        <div class="nav-dots">
+            <div class="dot active" onclick="currentSlide(1)"></div>
+            <div class="dot" onclick="currentSlide(2)"></div>
+            <div class="dot" onclick="currentSlide(3)"></div>
+            <div class="dot" onclick="currentSlide(4)"></div>
+            <div class="dot" onclick="currentSlide(5)"></div>
+            <div class="dot" onclick="currentSlide(6)"></div>
+        </div>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">Next ›</button>
+    </div>
+
+    <script>
+        let currentSlideIndex = 1;
+        const totalSlides = 6;
+
+        function updateSlidePosition() {
+            const container = document.getElementById('slideContainer');
+            const translateX = -(currentSlideIndex - 1) * 100;
+            container.style.transform = `translateX(${translateX}vw)`;
+            
+            // Update navigation
+            document.getElementById('prevBtn').disabled = currentSlideIndex === 1;
+            document.getElementById('nextBtn').disabled = currentSlideIndex === totalSlides;
+            
+            // Update dots
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index + 1 === currentSlideIndex);
+            });
+            
+            // Check if current slide needs scroll indicator
+            checkScrollIndicator();
+        }
+
+        function changeSlide(direction) {
+            const newIndex = currentSlideIndex + direction;
+            if (newIndex >= 1 && newIndex <= totalSlides) {
+                currentSlideIndex = newIndex;
+                updateSlidePosition();
+            }
+        }
+
+        function currentSlide(n) {
+            currentSlideIndex = n;
+            updateSlidePosition();
+        }
+
+        function checkScrollIndicator() {
+            const currentSlide = document.querySelector(`.slide:nth-child(${currentSlideIndex})`);
+            const slideContent = currentSlide.querySelector('.slide-content');
+            const scrollIndicator = document.getElementById('scrollIndicator');
+            
+            // Check if content is scrollable
+            const isScrollable = slideContent.scrollHeight > slideContent.clientHeight;
+            
+            if (isScrollable) {
+                scrollIndicator.classList.add('show');
+                
+                // Hide indicator when scrolled to bottom
+                slideContent.addEventListener('scroll', function() {
+                    const isAtBottom = slideContent.scrollTop + slideContent.clientHeight >= slideContent.scrollHeight - 10;
+                    if (isAtBottom) {
+                        scrollIndicator.classList.remove('show');
+                    } else {
+                        scrollIndicator.classList.add('show');
+                    }
+                });
+            } else {
+                scrollIndicator.classList.remove('show');
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                changeSlide(-1);
+            } else if (e.key === 'ArrowRight') {
+                changeSlide(1);
+            }
+        });
+
+        // Touch/swipe navigation
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    // Swipe left - next slide
+                    changeSlide(1);
+                } else {
+                    // Swipe right - previous slide
+                    changeSlide(-1);
+                }
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSlidePosition();
+        });
+    </script>
+</body>
+</html>
