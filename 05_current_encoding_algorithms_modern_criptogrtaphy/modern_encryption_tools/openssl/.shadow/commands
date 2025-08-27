@@ -1,0 +1,14 @@
+#encrypt aes
+openssl enc -aes-256-cbc -salt -in secret.txt -out secret.enc
+
+#decrypt aes
+openssl enc -d -aes-256-cbc -in secret.enc -out secret_decrypted.txt
+
+#encrypt chacha20
+openssl enc -chacha20 -in secret.txt -out secret_chacha.enc
+
+#decrypt chacha20
+openssl enc -d -chacha20 -in secret_chacha.enc -out secret_chacha.txt
+
+
+
