@@ -18,7 +18,6 @@ To ensure everyone has a uniform environment, **all labs are conducted inside a 
 
 ### 1️⃣ Install Kali Linux
 
-- Download the latest **Kali Linux VirtualBox or VMware image** from the [official Kali website](https://www.kali.org/get-kali/#kali-virtual-machines).
 - Import the VM into VirtualBox or VMware using your platform’s import wizard.
 
 ### 2️⃣ Configure Your Tools
@@ -33,9 +32,7 @@ Go to GitHub.com and create a free account if you don’t already have one.
 
 Configure Git with your name and email (used for commits):
 
-bash
-Copy
-Edit
+
 git config --global user.name "Your Name"
 git config --global user.email "your.student_email@example.com"
 4️⃣ Fork and Clone the Repository
