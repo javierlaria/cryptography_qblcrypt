@@ -1,7 +1,6 @@
 import collections
 import re
 import math
-import os # Added for path handling
 
 class CryptoAnalyzer:
     """
@@ -136,25 +135,20 @@ def run_analysis(text_to_analyze):
 if __name__ == "__main__":
     print("=" * 20 + " Interactive Cryptanalysis Toolkit " + "=" * 20)
     
-    # 1. Prompt the user for the file path
-    file_path = input("➡️ Enter the full path to your ciphertext file: ")
+    # Get ciphertext directly from user input
+    print("➡️ Enter your ciphertext below (press Enter twice when finished):")
     
-    try:
-        # 2. Try to open and read the file
-        with open(file_path, 'r') as file:
-            ciphertext_from_file = file.read()
-        
-        # 3. If successful, run the analysis
-        if ciphertext_from_file:
-            print(f"\n[+] Successfully loaded ciphertext from '{os.path.basename(file_path)}'")
-            print("=" * 20 + " ANALYSIS OF YOUR CIPHERTEXT " + "=" * 20)
-            run_analysis(ciphertext_from_file)
-        else:
-            print(f"[!] Error: The file '{file_path}' is empty.")
-
-    except FileNotFoundError:
-        # 4. Handle the error if the file doesn't exist
-        print(f"\n[!] ERROR: File not found at '{file_path}'. Please check the path and try again.")
-    except Exception as e:
-        # Handle other potential errors
-        print(f"\n[!] An unexpected error occurred: {e}")
+    lines = []
+    while True:
+        line = input()
+        if line == "":
+            break
+        lines.append(line)
+    
+    ciphertext = "\n".join(lines)
+    
+    if ciphertext.strip():
+        print("\n" + "=" * 20 + " ANALYSIS OF YOUR CIPHERTEXT " + "=" * 20)
+        run_analysis(ciphertext)
+    else:
+        print("\n[!] Error: No ciphertext was entered.")
