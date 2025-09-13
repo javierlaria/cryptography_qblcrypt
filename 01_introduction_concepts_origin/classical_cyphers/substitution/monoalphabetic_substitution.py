@@ -85,7 +85,6 @@ def run_solver(ciphertext):
             plain_char = ENGLISH_LETTER_FREQUENCY[i]
             likely_key_for_decryption[cipher_char] = plain_char
 
-    # --- THIS IS THE FIX ---
     # To display the key correctly, we need to invert it to Plaintext -> Ciphertext format
     # because that's what the display_key function expects.
     displayable_key = {v: k for k, v in likely_key_for_decryption.items()}
